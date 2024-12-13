@@ -16,7 +16,7 @@ module ALU(in1, in2, alu_op, zero, out);
     output reg [31:0] out;
 
     always@(*) begin
-      case(alu_op) begin
+      case(alu_op)
         3'b010: out = in1 + in2;  // add
         3'b110: out = in1 - in2;  // sub
         default: out = 0;
