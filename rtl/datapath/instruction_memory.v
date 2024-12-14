@@ -2,6 +2,7 @@ module instruction_memory(
     input [31:0] address,       // Address input
     output [31:0] instruction   // Instruction output
 );
+    // TODO: instruction memory size is 4K
     // Memory array to hold instructions
     reg [31:0] memory [0:255];  // 256 words of 32-bit memory
 
