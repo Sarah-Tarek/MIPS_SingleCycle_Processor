@@ -3,6 +3,7 @@ module data_memory(
     input [31:0] address, write_data,
     output [31:0] read_data
 );
+    // TODO: data memory size is 16K
     reg [31:0] memory [0:255]; // 256 x 32-bit words
 
     always @(posedge clk) begin
