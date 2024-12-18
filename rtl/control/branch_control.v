@@ -7,7 +7,6 @@ module branch_control (
         case (opcode)
             6'b000100: branch_taken = zero;         // beq
             6'b000101: branch_taken = ~zero;        // bne
-            // Add other branch instructions 
             default:   branch_taken = 1'b0;         // Default: No branch
         endcase
     end

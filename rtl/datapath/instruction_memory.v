@@ -2,14 +2,16 @@ module instruction_memory(
     input [31:0] address,       // Address input
     output [31:0] instruction   // Instruction output
 );
-    // TODO: instruction memory size is 4K
+    // 4K Instruction Memory
+    // 4K = 4 x 1024 = 4096 bytes
+    // Each word in memory is 32 bits: 4096 / 4 = 1024 words
     // Memory array to hold instructions
-    reg [31:0] memory [0:255];  // 256 words of 32-bit memory
+    reg [31:0] memory [0:1023];  // 1024 words each 32-bit
 
     // Output the instruction at the given address
-    assign instruction = memory[address[9:2]]; // Word-aligned (ignoring lower 2 bits)
+    assign instruction = memory[address[11:2]]; // Word-aligned (ignoring lower 2 bits)
 
-    // Preload instructions based on the restricted single-cycle MIPS instruction set
+    // Preload instructions
     initial begin
         memory[0]  = 32'b000000_00001_00010_00011_00000_100000; // add $3, $1, $2
         memory[1]  = 32'b001000_00001_00100_0000000000001010;   // addi $4, $1, 10
@@ -40,8 +42,8 @@ module instruction_memory(
         memory[26] = 32'b000000_01100_01001_11000_00000_101011; // sltu $24, $12, $9
         memory[27] = 32'b000000_01011_01100_11001_00000_101011; // sltu $25, $11, $12
 
-        // Fill remaining memory with NOPs (32'b00000000000000000000000000000000)
-        for (int i = 28; i < 256; i = i + 1) begin
+        // Fill remaining memory with NOPs
+        for (int i = 28; i < 1024; i = i + 1) begin
             memory[i] = 32'b000000_00000_00000_00000_00000_000000; // NOP
         end
     end

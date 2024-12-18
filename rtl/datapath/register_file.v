@@ -9,7 +9,7 @@ module register_file(
     output [31:0] read_data2        // Data read from the second register
 );
 
-    // 32 registers, each 32 bits wide
+    // 32 registers each 32 bits
     reg [31:0] registers [0:31];
 
     // Initialize registers (for simulation purposes)
