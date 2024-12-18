@@ -12,6 +12,7 @@ module instruction_memory(
     assign instruction = memory[address[11:2]]; // Word-aligned (ignoring lower 2 bits)
 
     // Preload instructions
+    integer i;
     initial begin
         memory[0]  = 32'b000000_00001_00010_00011_00000_100000; // add $3, $1, $2
         memory[1]  = 32'b001000_00001_00100_0000000000001010;   // addi $4, $1, 10
@@ -43,7 +44,7 @@ module instruction_memory(
         memory[27] = 32'b000000_01011_01100_11001_00000_101011; // sltu $25, $11, $12
 
         // Fill remaining memory with NOPs
-        for (int i = 28; i < 1024; i = i + 1) begin
+        for (i = 28; i < 1024; i = i + 1) begin
             memory[i] = 32'b000000_00000_00000_00000_00000_000000; // NOP
         end
     end
