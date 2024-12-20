@@ -2,7 +2,7 @@
 
 `timescale 1ns / 1ps
 
-module MIPS_tb;
+module MIPS_TB2;
 
     // Inputs to the MIPS module
     reg clk;
