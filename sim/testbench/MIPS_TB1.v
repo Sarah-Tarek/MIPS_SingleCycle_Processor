@@ -42,7 +42,7 @@ module MIPS_TB1;
         dut.instruction_memory_inst.memory[0] = 32'b00000000011000100001100000100000; // ADD instruction in binary (assuming registers 3 and 4)
         
         #50; // Wait for the add operation to complete
-        $display("Add Test: Register 2 = %d (Expected: 5)", dut.register_file_inst.regs[2]); // Assuming $2 = 5 after ADD
+        $display("Add Test: Register 2 = %d (Expected: 5)", dut.register_file_inst.registers[2]); // Assuming $2 = 5 after ADD
 
         // Test for Subtract operation (Subtract 3 from 5 -> result should be 2)
         // Load instruction into instruction memory to perform SUB
@@ -50,7 +50,7 @@ module MIPS_TB1;
         dut.instruction_memory_inst.memory[1] = 32'b00000000011000110011100000100010; // SUB instruction in binary
         
         #50; // Wait for the subtract operation to complete
-        $display("Subtract Test: Register 3 = %d (Expected: 2)", dut.register_file_inst.regs[3]); // Assuming $3 = 2 after SUB
+        $display("Subtract Test: Register 3 = %d (Expected: 2)", dut.register_file_inst.registers[3]); // Assuming $3 = 2 after SUB
 
         // Test for Load operation (Load value from data memory into a register)
         // Assume we load value 10 into Register 4 from memory location 4
@@ -60,11 +60,11 @@ module MIPS_TB1;
         dut.instruction_memory_inst.memory[2] = 32'b10001100000001000000000000000100; // LW instruction for Load Word
         
         #50; // Wait for the load operation to complete
-        $display("Load Test: Register 4 = %d (Expected: 10)", dut.register_file_inst.regs[4]); // Assuming $4 = 10 after LW
+        $display("Load Test: Register 4 = %d (Expected: 10)", dut.register_file_inst.registers[4]); // Assuming $4 = 10 after LW
 
         // Test for Store operation (Store value 20 from Register 2 to data memory address 10)
         // First, set $2 to 20
-        dut.register_file_inst.regs[2] = 20;
+        dut.register_file_inst.registers[2] = 20;
         // Store instruction: SW $2, 10($0) -> Store value in $2 into memory[10]
         dut.instruction_memory_inst.memory[3] = 32'b10101100000000100000000000001010; // SW instruction for Store Word
         
@@ -74,8 +74,8 @@ module MIPS_TB1;
         // Test for Branch operation (Branch if zero flag is set, for example, BEQ)
         // Example: BEQ $1, $2, label -> Branch if $1 == $2
         // Set $1 = $2 to trigger the branch
-        dut.register_file_inst.regs[1] = 5;
-        dut.register_file_inst.regs[2] = 5;
+        dut.register_file_inst.registers[1] = 5;
+        dut.register_file_inst.registers[2] = 5;
         // Load BEQ instruction to branch
         dut.instruction_memory_inst.memory[4] = 32'b00010000001000100000000000000100; // BEQ instruction
         
@@ -84,6 +84,6 @@ module MIPS_TB1;
 
         // End simulation
         #100;
-        $finish;
+        $stop;
     end
 endmodule

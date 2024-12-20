@@ -39,15 +39,15 @@ module MIPS_TB2;
 
         // Test for Add
         #50; // Wait for the add operation to complete
-        $display("Add Test: Register 2 = %d (Expected: 5)", dut.register_file_inst.regs[2]); // Assuming the result is 5
+        $display("Add Test: Register 2 = %d (Expected: 5)", dut.register_file_inst.registers[2]); // Assuming the result is 5
 
         // Test for Subtract
         #50;
-        $display("Subtract Test: Register 3 = %d (Expected: 2)", dut.register_file_inst.regs[3]); // Assuming the result is 2
+        $display("Subtract Test: Register 3 = %d (Expected: 2)", dut.register_file_inst.registers[3]); // Assuming the result is 2
 
         // Test for Load
         #50;
-        $display("Load Test: Register 4 = %d (Expected: 10)", dut.register_file_inst.regs[4]); // Assuming the value loaded is 10
+        $display("Load Test: Register 4 = %d (Expected: 10)", dut.register_file_inst.registers[4]); // Assuming the value loaded is 10
 
         // Test for Store
         #50;
@@ -59,7 +59,7 @@ module MIPS_TB2;
 
         // End simulation
         #100;
-        $finish;
+        $stop;
     end
 
 endmodule
