@@ -1,4 +1,4 @@
-module MIPS (
+module MIPS_old (
     input clk,                 // Clock signal
     input reset                // Reset signal
 );
