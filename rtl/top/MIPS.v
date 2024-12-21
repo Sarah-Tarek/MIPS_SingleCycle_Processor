@@ -90,7 +90,7 @@ module MIPS (
     // Adder for branch calculation
     adder branch_adder (
         .a(pc_out),
-        .b({sign_extended_immediate, 2'b00}),
+        .b(sign_extended_immediate << 2),
         .result(branch_target)
     );
     
