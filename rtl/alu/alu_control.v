@@ -25,4 +25,5 @@ module alu_control (
             default: alu_control = 4'b0000; // Default (NOP)
         endcase
     end
+    
 endmodule

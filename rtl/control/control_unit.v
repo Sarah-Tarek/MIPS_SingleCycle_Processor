@@ -10,6 +10,7 @@ module control_unit (
     output reg [1:0] alu_op,    // ALU operation
     output reg jump             // Jump instruction
 );
+
     always @(*) begin
         case (opcode)
             6'b000000: begin // R-format
@@ -23,7 +24,7 @@ module control_unit (
                 alu_op = 2'b10;
                 jump = 0;
             end
-            6'b100011: begin // lw
+            6'b100011: begin // lw (load word)
                 reg_dst = 0;
                 alu_src = 1;
                 mem_to_reg = 1;
@@ -34,7 +35,7 @@ module control_unit (
                 alu_op = 2'b00;
                 jump = 0;
             end
-            6'b101011: begin // sw
+            6'b101011: begin // sw (store word)
                 reg_dst = 0; // Don't care
                 alu_src = 1;
                 mem_to_reg = 0; // Don't care
@@ -45,7 +46,7 @@ module control_unit (
                 alu_op = 2'b00;
                 jump = 0;
             end
-            6'b000100: begin // beq
+            6'b000100: begin // beq (branch if equal)
                 reg_dst = 0; // Don't care
                 alu_src = 0;
                 mem_to_reg = 0; // Don't care
@@ -56,7 +57,7 @@ module control_unit (
                 alu_op = 2'b01;
                 jump = 0;
             end
-            6'b000101: begin // bne
+            6'b000101: begin // bne (branch if not equal)
                 reg_dst = 0; // Don't care
                 alu_src = 0;
                 mem_to_reg = 0; // Don't care
@@ -67,7 +68,7 @@ module control_unit (
                 alu_op = 2'b01;
                 jump = 0;
             end
-            6'b000010: begin // j
+            6'b000010: begin // j (jump)
                 reg_dst = 0; // Don't care
                 alu_src = 0; // Don't care
                 mem_to_reg = 0; // Don't care
@@ -78,8 +79,8 @@ module control_unit (
                 alu_op = 2'b00; // Don't care
                 jump = 1;
             end
-            // Add other instructions here
-            default: begin // Default case
+            // Additional instructions can be added below
+            default: begin // Default case (NOP or undefined instruction)
                 reg_dst = 0;
                 alu_src = 0;
                 mem_to_reg = 0;
@@ -92,4 +93,5 @@ module control_unit (
             end
         endcase
     end
+
 endmodule

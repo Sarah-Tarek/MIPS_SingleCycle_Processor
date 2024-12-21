@@ -12,9 +12,9 @@ module alu(
             4'b0001: result = a | b;           // OR
             4'b0010: result = a + b;           // ADD
             4'b0110: result = a - b;           // SUB
-            4'b0111: result = (a < b) ? 1 : 0; // SLT (Set Less Than)
+            4'b0111: result = (a < b) ? 32'b1 : 32'b0; // SLT (Set Less Than)
             4'b1100: result = ~(a | b);        // NOR
-            default: result = 0;
+            default: result = 32'b0;
         endcase
     end
 
