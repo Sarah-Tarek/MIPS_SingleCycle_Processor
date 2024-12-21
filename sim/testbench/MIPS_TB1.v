@@ -39,8 +39,6 @@ module MIPS_TB1;
         // Test for Add operation (Add 2 and 3 -> result should be 5)
         // Load instruction into instruction memory to perform an ADD
         // Example: ADD $2, $3, $4 -> $2 = $3 + $4
-        dut.register_file_inst.registers[3] = 32'd2;   // $3
-        dut.register_file_inst.registers[4] = 32'd3;   // $4
         dut.instruction_memory_inst.memory[0] = 32'b000000_00011_00100_00010_00000_100000; // ADD instruction
         
         #50; // Wait for the add operation to complete
@@ -50,8 +48,6 @@ module MIPS_TB1;
         // Test for Subtract operation (Subtract 3 from 5 -> result should be 2)
         // Load instruction into instruction memory to perform SUB
         // Example: SUB $3, $4, $5 -> $3 = $4 - $5
-        dut.register_file_inst.registers[4] = 32'd5;   // $4
-        dut.register_file_inst.registers[5] = 32'd3;   // $5
         dut.instruction_memory_inst.memory[1] = 32'b000000_00011_00101_00011_00000_100010; // SUB instruction
         
         #50; // Wait for the subtract operation to complete
