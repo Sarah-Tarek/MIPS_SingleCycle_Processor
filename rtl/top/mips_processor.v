@@ -20,7 +20,7 @@ module mips_processor(
     // =========================
     wire [31:0] instruction;
 
-    // Use your instruction_memory module (instructions loaded in TB)
+    // Instruction memory (instructions loaded externally, e.g., in testbench)
     instruction_memory imem (
         .address(pc_reg),
         .instruction(instruction)
@@ -29,20 +29,20 @@ module mips_processor(
     // =========================
     // 3) DECODE / CONTROL
     // =========================
-    wire [5:0] opcode = instruction[31:26];
-    wire [4:0] rs     = instruction[25:21];
-    wire [4:0] rt     = instruction[20:16];
-    wire [4:0] rd     = instruction[15:11];
-    wire [5:0] funct  = instruction[5:0];
-    wire [15:0] imm   = instruction[15:0];
-    wire [25:0] jump_address = instruction[25:0]; // For j / jal
+    wire [5:0] opcode       = instruction[31:26];
+    wire [4:0] rs           = instruction[25:21];
+    wire [4:0] rt           = instruction[20:16];
+    wire [4:0] rd           = instruction[15:11];
+    wire [5:0] funct        = instruction[5:0];
+    wire [15:0] imm         = instruction[15:0];
+    wire [25:0] jump_address= instruction[25:0]; // For j / jal
 
     // Control signals
     wire       reg_dst, alu_src, mem_to_reg, reg_write;
     wire       mem_read, mem_write, branch, jump;
     wire [1:0] alu_op;
 
-    // Instantiate your control unit
+    // Control Unit
     control_unit CU (
         .opcode(opcode),
         .reg_dst(reg_dst),
@@ -63,11 +63,11 @@ module mips_processor(
     wire [4:0]  write_reg_sel;  // Destination register index
     wire [31:0] read_data1, read_data2;
 
-    // Mux for write register selection: rt vs. rd
+    // Mux for write register selection: rt vs rd
     assign write_reg_sel = (reg_dst) ? rd : rt;
 
-    // Simple register file
-    reg_file REG_FILE (
+    // Instantiate the register file
+    register_file REG_FILE (
         .clk(clk),
         .reg_write(reg_write),
         .read_reg1(rs),
@@ -141,7 +141,7 @@ module mips_processor(
         .branch_taken(branch_taken)
     );
 
-    // Combined branch condition: must be a branch instruction AND branch is taken
+    // Combined branch condition
     wire pc_src = branch & branch_taken;
 
     // =========================
@@ -160,7 +160,7 @@ module mips_processor(
         .result(pc_plus_4)
     );
 
-    // Shift-left-2 of the sign-extended immediate (for branch offset)
+    // Shift-left-2 of the sign-extended immediate
     assign branch_offset = {sign_ext_imm[29:0], 2'b00};
 
     // Add to get branch target
@@ -176,7 +176,7 @@ module mips_processor(
     // Jump target: {PC+4[31:28], jump_address << 2}
     assign pc_jump = { pc_plus_4[31:28], jump_address, 2'b00 };
 
-    // Final next PC selection
+    // Next PC selection
     always @(*) begin
         if (jump)
             pc_next = pc_jump;
