@@ -1,4 +1,4 @@
-module instruction_memory(
+module filled_instruction_memory(
     input [31:0] address,       // Address input
     output [31:0] instruction   // Instruction output
 );

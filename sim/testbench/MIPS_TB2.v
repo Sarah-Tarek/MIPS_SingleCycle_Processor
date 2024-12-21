@@ -1,4 +1,4 @@
-// in case the instruction memory is filled with instructions
+// in case the instruction memory is initially preloaded with instructions
 
 `timescale 1ns / 1ps
 
