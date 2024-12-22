@@ -7,7 +7,6 @@ module mips_processor_tb;
     // ----------------------------------
     reg clk;
     reg reset;
-    integer i;  // for loops in testbench initialization
 
     // ----------------------------------
     // Instantiate the MIPS processor (DUT)
@@ -28,7 +27,7 @@ module mips_processor_tb;
 
     // ----------------------------------
     // 2) Function: Convert register number to ASCII
-    //    for $0..$31. Feel free to rename or expand.
+    //    for $0..$31.
     // ----------------------------------
     function [63:0] reg2str;
         input [4:0] r;
@@ -75,6 +74,7 @@ module mips_processor_tb;
     // 3) Function: Decode a 32-bit instruction
     //    into a MIPS-like assembly string.
     // ----------------------------------
+    // 3) Function: Decode a 32-bit instruction into a MIPS-like assembly string.
     function [127:0] decode_instr;
         input [31:0] instr;
         reg [5:0] opcode, funct;
@@ -167,6 +167,7 @@ module mips_processor_tb;
     end
     endfunction
 
+
     // ----------------------------------
     // 4) Main test sequence
     // ----------------------------------
@@ -178,39 +179,53 @@ module mips_processor_tb;
 
         // 4.2) Load instructions into the DUT's instruction memory
         //      (DUT.imem.memory is a 1024-element array of 32-bit regs)
-        //      Feel free to expand or modify instructions as needed
-        DUT.imem.memory[0]  = 32'b001000_00000_00001_0000000000001010;   // addi $1, $0, 10
-        DUT.imem.memory[1]  = 32'b001000_00000_00010_0000000000010100;   // addi $2, $0, 20
-        DUT.imem.memory[2]  = 32'b000000_00001_00010_00011_00000_100000; // add  $3, $1, $2
-        DUT.imem.memory[3]  = 32'b101011_00000_00011_0000000000001000;   // sw   $3, 8($0)
-        DUT.imem.memory[4]  = 32'b100011_00000_00100_0000000000001000;   // lw   $4, 8($0)
-        DUT.imem.memory[5]  = 32'b000100_00100_00011_0000000000000010;   // beq  $4, $3, +2
-        DUT.imem.memory[6]  = 32'b000000_00001_00010_00101_00000_100010; // sub  $5, $1, $2
-        DUT.imem.memory[7]  = 32'b000010_00000000000000000000001001;     // j    9
-        DUT.imem.memory[8]  = 32'b000000_00100_00001_00100_00000_100101; // or   $4, $4, $1
-        DUT.imem.memory[9]  = 32'b000000_00001_00100_00110_00000_101010; // slt  $6, $1, $4
-        DUT.imem.memory[10] = 32'b000000_00100_00110_00111_00000_100111; // nor  $7, $4, $6
 
-        // Extra examples
-        DUT.imem.memory[11] = 32'b000101_00001_00100_1111111111111000;   // bne $1,$4, -8
-        DUT.imem.memory[12] = 32'b001100_00001_01000_0000000000000101;   // andi $8,$1,5
-        DUT.imem.memory[13] = 32'b001101_00001_01001_0000000000001111;   // ori  $9,$1,15
-        DUT.imem.memory[14] = 32'b001111_00000_01010_1111111111111111;   // lui  $10,0xFFFF
-        DUT.imem.memory[15] = 32'b001010_00101_01011_0000000000000010;   // slti $11,$5,2
+        // addi $1, $0, 10
+        DUT.imem.memory[0]  = 32'b001000_00000_00001_0000000000001010;
+
+        // addi $2, $0, 20
+        DUT.imem.memory[1]  = 32'b001000_00000_00010_0000000000010100;
+
+        // add $3, $1, $2
+        DUT.imem.memory[2]  = 32'b000000_00001_00010_00011_00000_100000;
+
+        // sw $3, 8($0)
+        DUT.imem.memory[3]  = 32'b101011_00000_00011_0000000000001000;
+
+        // lw $4, 8($0)
+        DUT.imem.memory[4]  = 32'b100011_00000_00100_0000000000001000;
+
+        // sub $5, $1, $2
+        DUT.imem.memory[5]  = 32'b000000_00001_00010_00101_00000_100010;
+
+        // beq $4, $3, +2
+        DUT.imem.memory[6]  = 32'b000100_00100_00011_0000000000000010;
+
+        // j 9
+        DUT.imem.memory[7]  = 32'b000010_00000000000000000000001001;
+
+        // or $4, $4, $1
+        DUT.imem.memory[8]  = 32'b000000_00100_00001_00100_00000_100101;
+
+        // slt  $6, $1, $4
+        DUT.imem.memory[9]  = 32'b000000_00001_00100_00110_00000_101010;
+
+        // nor $7, $4, $6
+        DUT.imem.memory[10] = 32'b000000_00100_00110_00111_00000_100111; 
+
 
         // 4.3) Display/Monitor 
-        // PROFESSIONAL output with BOTH the short version (Instr, Decoded)
         // AND the version that includes R1..R7
         $display("---------------------------------------------------");
-        $display("Starting simulation with Professional Debug Output...");
+        $display("Starting simulation...");
         $display("---------------------------------------------------");
 
         // We can print a header once
-        $display("Time                  | PC  | Instruction (hex) | Decoded          | R1  | R2  | R3  | R4  | R5  | R6  | R7");
+        $display("                Time |      PC       |   Instruction  |       Decoded      |");
 
         // We can combine all info in one $monitor
         $monitor($time, 
-            " | PC=%d | Instr=%h | \"%s\" | R1=%d | R2=%d | R3=%d | R4=%d | R5=%d | R6=%d | R7=%d",
+            " | PC=%d | Instr=%h | \"%s\" | R1=%d | R2=%d | R3=%d | R4=%d | R5=%d | R6=%d | R7=%d ",
              DUT.pc_reg,
              DUT.instruction,
              decode_instr(DUT.instruction),
@@ -218,16 +233,16 @@ module mips_processor_tb;
              DUT.REG_FILE.registers[2],
              DUT.REG_FILE.registers[3],
              DUT.REG_FILE.registers[4],
-             DUT.REG_FILE.registers[5],
+             $signed(DUT.REG_FILE.registers[5]),
              DUT.REG_FILE.registers[6],
-             DUT.REG_FILE.registers[7]
+             $signed(DUT.REG_FILE.registers[7])
         );
 
         // 4.4) Let the simulation run
         #400;
         $display("---------------------------------------------------");
-        $display("Simulation finished. Exiting...");
+        $display("Simulation finished.");
         $display("---------------------------------------------------");
-        $finish;
+        $stop;
     end
 endmodule
