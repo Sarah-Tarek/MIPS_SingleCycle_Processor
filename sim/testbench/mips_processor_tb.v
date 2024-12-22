@@ -7,15 +7,10 @@ module mips_processor_tb;
     // ----------------------------------
     reg clk;
     reg reset;
+    integer i;  // for loops in testbench initialization
 
     // ----------------------------------
-    // Declare integer i at MODULE level
-    // (not inside the initial block)
-    // ----------------------------------
-    integer i;
-
-    // ----------------------------------
-    // Instantiate the MIPS processor
+    // Instantiate the MIPS processor (DUT)
     // ----------------------------------
     mips_processor DUT (
         .clk(clk),
@@ -23,78 +18,216 @@ module mips_processor_tb;
     );
 
     // ----------------------------------
-    // Clock generation (period = 10 ns)
+    // 1) Clock generation
+    //    10 ns period => toggling every 5 ns
     // ----------------------------------
     initial begin
         clk = 0;
-        forever #5 clk = ~clk;  // Toggle every 5 ns
+        forever #5 clk = ~clk;  
     end
 
     // ----------------------------------
-    // Main test sequence
+    // 2) Function: Convert register number to ASCII
+    //    for $0..$31. Feel free to rename or expand.
+    // ----------------------------------
+    function [63:0] reg2str;
+        input [4:0] r;
+        begin
+            case (r)
+                5'd0:   reg2str = "$0";
+                5'd1:   reg2str = "$1";
+                5'd2:   reg2str = "$2";
+                5'd3:   reg2str = "$3";
+                5'd4:   reg2str = "$4";
+                5'd5:   reg2str = "$5";
+                5'd6:   reg2str = "$6";
+                5'd7:   reg2str = "$7";
+                5'd8:   reg2str = "$8";
+                5'd9:   reg2str = "$9";
+                5'd10:  reg2str = "$10";
+                5'd11:  reg2str = "$11";
+                5'd12:  reg2str = "$12";
+                5'd13:  reg2str = "$13";
+                5'd14:  reg2str = "$14";
+                5'd15:  reg2str = "$15";
+                5'd16:  reg2str = "$16";
+                5'd17:  reg2str = "$17";
+                5'd18:  reg2str = "$18";
+                5'd19:  reg2str = "$19";
+                5'd20:  reg2str = "$20";
+                5'd21:  reg2str = "$21";
+                5'd22:  reg2str = "$22";
+                5'd23:  reg2str = "$23";
+                5'd24:  reg2str = "$24";
+                5'd25:  reg2str = "$25";
+                5'd26:  reg2str = "$26";
+                5'd27:  reg2str = "$27";
+                5'd28:  reg2str = "$28";
+                5'd29:  reg2str = "$29";
+                5'd30:  reg2str = "$30";
+                5'd31:  reg2str = "$31";
+                default: reg2str = "$??";
+            endcase
+        end
+    endfunction
+
+    // ----------------------------------
+    // 3) Function: Decode a 32-bit instruction
+    //    into a MIPS-like assembly string.
+    // ----------------------------------
+    function [127:0] decode_instr;
+        input [31:0] instr;
+        reg [5:0] opcode, funct;
+        reg [4:0] rs, rt, rd, shamt;
+        reg [15:0] imm;
+        reg [25:0] jaddr;
+    begin
+        opcode = instr[31:26];
+        rs     = instr[25:21];
+        rt     = instr[20:16];
+        rd     = instr[15:11];
+        shamt  = instr[10:6];
+        funct  = instr[5:0];
+        imm    = instr[15:0];
+        jaddr  = instr[25:0];
+
+        decode_instr = "unknown";
+
+        case (opcode)
+            // --------------------------------------------------
+            // R-type (opcode=0)
+            // --------------------------------------------------
+            6'b000000: begin
+                case (funct)
+                    6'b100000: decode_instr = {"add  ", reg2str(rd), ",", reg2str(rs), ",", reg2str(rt)};
+                    6'b100010: decode_instr = {"sub  ", reg2str(rd), ",", reg2str(rs), ",", reg2str(rt)};
+                    6'b100100: decode_instr = {"and  ", reg2str(rd), ",", reg2str(rs), ",", reg2str(rt)};
+                    6'b100101: decode_instr = {"or   ", reg2str(rd), ",", reg2str(rs), ",", reg2str(rt)};
+                    6'b101010: decode_instr = {"slt  ", reg2str(rd), ",", reg2str(rs), ",", reg2str(rt)};
+                    6'b100111: decode_instr = {"nor  ", reg2str(rd), ",", reg2str(rs), ",", reg2str(rt)};
+                    6'b000000: decode_instr = {"sll  ", reg2str(rd), ",", reg2str(rt), ",shamt"};
+                    6'b000010: decode_instr = {"srl  ", reg2str(rd), ",", reg2str(rt), ",shamt"};
+                    6'b000011: decode_instr = {"sra  ", reg2str(rd), ",", reg2str(rt), ",shamt"};
+                    default:   decode_instr = "R-type?";
+                endcase
+            end
+
+            // --------------------------------------------------
+            // lw (100011)
+            // --------------------------------------------------
+            6'b100011: decode_instr = {"lw   ", reg2str(rt), ", offset(", reg2str(rs), ")"};
+
+            // --------------------------------------------------
+            // sw (101011)
+            // --------------------------------------------------
+            6'b101011: decode_instr = {"sw   ", reg2str(rt), ", offset(", reg2str(rs), ")"};
+
+            // --------------------------------------------------
+            // beq (000100)
+            // --------------------------------------------------
+            6'b000100: decode_instr = {"beq  ", reg2str(rs), ",", reg2str(rt), ", offset"};
+
+            // --------------------------------------------------
+            // bne (000101)
+            // --------------------------------------------------
+            6'b000101: decode_instr = {"bne  ", reg2str(rs), ",", reg2str(rt), ", offset"};
+
+            // --------------------------------------------------
+            // j (000010)
+            // --------------------------------------------------
+            6'b000010: decode_instr = {"j    addr"};
+
+            // --------------------------------------------------
+            // addi (001000)
+            // --------------------------------------------------
+            6'b001000: decode_instr = {"addi ", reg2str(rt), ",", reg2str(rs), ", imm"};
+
+            // --------------------------------------------------
+            // andi (001100)
+            // --------------------------------------------------
+            6'b001100: decode_instr = {"andi ", reg2str(rt), ",", reg2str(rs), ", imm"};
+
+            // --------------------------------------------------
+            // ori (001101)
+            // --------------------------------------------------
+            6'b001101: decode_instr = {"ori  ", reg2str(rt), ",", reg2str(rs), ", imm"};
+
+            // --------------------------------------------------
+            // lui (001111)
+            // --------------------------------------------------
+            6'b001111: decode_instr = {"lui  ", reg2str(rt), ", imm"};
+
+            // --------------------------------------------------
+            // slti (001010)
+            // --------------------------------------------------
+            6'b001010: decode_instr = {"slti ", reg2str(rt), ",", reg2str(rs), ", imm"};
+
+            default: decode_instr = "???";
+        endcase
+    end
+    endfunction
+
+    // ----------------------------------
+    // 4) Main test sequence
     // ----------------------------------
     initial begin
-        // 1) Apply reset
+        // 4.1) Apply reset
         reset = 1;
-        #20;               // Wait 20 ns
-        reset = 0;         // Deassert reset
+        #20;
+        reset = 0;
 
-        // 2) Load instructions into the instruction memory
-        //    (DUT.imem.memory is a 1024-element array of 32-bit regs)
+        // 4.2) Load instructions into the DUT's instruction memory
+        //      (DUT.imem.memory is a 1024-element array of 32-bit regs)
+        //      Feel free to expand or modify instructions as needed
+        DUT.imem.memory[0]  = 32'b001000_00000_00001_0000000000001010;   // addi $1, $0, 10
+        DUT.imem.memory[1]  = 32'b001000_00000_00010_0000000000010100;   // addi $2, $0, 20
+        DUT.imem.memory[2]  = 32'b000000_00001_00010_00011_00000_100000; // add  $3, $1, $2
+        DUT.imem.memory[3]  = 32'b101011_00000_00011_0000000000001000;   // sw   $3, 8($0)
+        DUT.imem.memory[4]  = 32'b100011_00000_00100_0000000000001000;   // lw   $4, 8($0)
+        DUT.imem.memory[5]  = 32'b000100_00100_00011_0000000000000010;   // beq  $4, $3, +2
+        DUT.imem.memory[6]  = 32'b000000_00001_00010_00101_00000_100010; // sub  $5, $1, $2
+        DUT.imem.memory[7]  = 32'b000010_00000000000000000000001001;     // j    9
+        DUT.imem.memory[8]  = 32'b000000_00100_00001_00100_00000_100101; // or   $4, $4, $1
+        DUT.imem.memory[9]  = 32'b000000_00001_00100_00110_00000_101010; // slt  $6, $1, $4
+        DUT.imem.memory[10] = 32'b000000_00100_00110_00111_00000_100111; // nor  $7, $4, $6
 
-        // address 0: addi $1, $0, 10
-        DUT.imem.memory[0] = 32'b001000_00000_00001_0000000000001010;
+        // Extra examples
+        DUT.imem.memory[11] = 32'b000101_00001_00100_1111111111111000;   // bne $1,$4, -8
+        DUT.imem.memory[12] = 32'b001100_00001_01000_0000000000000101;   // andi $8,$1,5
+        DUT.imem.memory[13] = 32'b001101_00001_01001_0000000000001111;   // ori  $9,$1,15
+        DUT.imem.memory[14] = 32'b001111_00000_01010_1111111111111111;   // lui  $10,0xFFFF
+        DUT.imem.memory[15] = 32'b001010_00101_01011_0000000000000010;   // slti $11,$5,2
 
-        // address 1: addi $2, $0, 20
-        DUT.imem.memory[1] = 32'b001000_00000_00010_0000000000010100;
+        // 4.3) Display/Monitor 
+        // PROFESSIONAL output with BOTH the short version (Instr, Decoded)
+        // AND the version that includes R1..R7
+        $display("---------------------------------------------------");
+        $display("Starting simulation with Professional Debug Output...");
+        $display("---------------------------------------------------");
 
-        // address 2: add $3, $1, $2  ($3 = 10 + 20 = 30)
-        DUT.imem.memory[2] = 32'b000000_00001_00010_00011_00000_100000;
+        // We can print a header once
+        $display("Time                  | PC  | Instruction (hex) | Decoded          | R1  | R2  | R3  | R4  | R5  | R6  | R7");
 
-        // address 3: sw $3, 8($0)
-        DUT.imem.memory[3] = 32'b101011_00000_00011_0000000000001000;
-
-        // address 4: lw $4, 8($0)
-        DUT.imem.memory[4] = 32'b100011_00000_00100_0000000000001000;
-
-        // address 5: beq $4, $3, +2
-        DUT.imem.memory[5] = 32'b000100_00100_00011_0000000000000010;
-
-        // address 6: sub $5, $1, $2
-        DUT.imem.memory[6] = 32'b000000_00001_00010_00101_00000_100010;
-        
-        // address 7: j 9
-        DUT.imem.memory[7] = 32'b000010_00000000000000000000001001;
-
-        // address 8: or $4, $4, $1
-        DUT.imem.memory[8] = 32'b000000_00100_00001_00100_00000_100101;
-
-        // address 9: slt $6, $1, $4
-        DUT.imem.memory[9] = 32'b000000_00001_00100_00110_00000_101010;
-
-        // address 10: nor $7, $4, $6
-        DUT.imem.memory[10] = 32'b000000_00100_00110_00111_00000_100111;
-
-        // 3) Display/Monitor
-        $display("Starting simulation...");
+        // We can combine all info in one $monitor
         $monitor($time, 
-                 " PC=%d | Instr=%h | R1=%d | R2=%d | R3=%d | R4=%d | R5=%d | R6=%d | R7=%d",
-                  DUT.pc_reg,
-                  DUT.instruction,
-                  DUT.REG_FILE.registers[1],
-                  DUT.REG_FILE.registers[2],
-                  DUT.REG_FILE.registers[3],
-                  DUT.REG_FILE.registers[4],
-                  DUT.REG_FILE.registers[5],
-                  DUT.REG_FILE.registers[6],
-                  DUT.REG_FILE.registers[7]
-                 );
+            " | PC=%d | Instr=%h | \"%s\" | R1=%d | R2=%d | R3=%d | R4=%d | R5=%d | R6=%d | R7=%d",
+             DUT.pc_reg,
+             DUT.instruction,
+             decode_instr(DUT.instruction),
+             DUT.REG_FILE.registers[1],
+             DUT.REG_FILE.registers[2],
+             DUT.REG_FILE.registers[3],
+             DUT.REG_FILE.registers[4],
+             DUT.REG_FILE.registers[5],
+             DUT.REG_FILE.registers[6],
+             DUT.REG_FILE.registers[7]
+        );
 
-        // 4) Let the simulation run for a while
-        #300;  // 300 ns total
-        $display("Simulation finished.");
+        // 4.4) Let the simulation run
+        #400;
+        $display("---------------------------------------------------");
+        $display("Simulation finished. Exiting...");
+        $display("---------------------------------------------------");
         $finish;
     end
-
 endmodule
-
