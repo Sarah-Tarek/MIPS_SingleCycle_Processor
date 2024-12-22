@@ -76,9 +76,6 @@ module mips_processor(
     // Extract lower 5 bits from the mux output for register selection
     assign write_reg_sel = reg_dst_mux_out[4:0];
 
-
-
-
     // Instantiate the register file
     register_file REG_FILE (
         .clk(clk),
@@ -110,7 +107,6 @@ module mips_processor(
     .opcode(opcode),
     .alu_control(alu_control)
     );
-
 
     // =========================
     // 7) ALU INPUT MUX
@@ -199,7 +195,7 @@ module mips_processor(
     );
 
     // Mux for branch or sequential
-    mux_2to1 pc_branch_mux (
+    mux_2to1 PC_BRANCH_MUX (
         .in0(pc_plus_4),
         .in1(branch_sum),
         .sel(pc_src),
@@ -216,7 +212,7 @@ module mips_processor(
         else
             pc_next = pc_branch_or_seq;
     end */
-    mux_2to1 pc_next_mux (
+    mux_2to1 PC_NEXT_MUX (
         .in0(pc_branch_or_seq),
         .in1(pc_jump),
         .sel(jump),
