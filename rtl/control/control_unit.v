@@ -95,8 +95,6 @@ module control_unit (
                 jump = 1;
             end
 
-            // --------------- NEW I-TYPES ------------------
-
             // addi (001000)
             6'b001000: begin
                 reg_dst    = 0; // write to rt

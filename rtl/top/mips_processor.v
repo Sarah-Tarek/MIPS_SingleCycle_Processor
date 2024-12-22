@@ -5,15 +5,15 @@ module mips_processor(
     // =========================
     // 1) PROGRAM COUNTER (PC)
     // =========================
-    reg [31:0] pc_reg, pc_next;
+    wire [31:0] pc_reg;
+    wire [31:0] pc_next;
 
-    // On each rising clock edge, update PC (or reset to 0)
-    always @(posedge clk or posedge reset) begin
-        if (reset)
-            pc_reg <= 32'd0;
-        else
-            pc_reg <= pc_next;
-    end
+    pc PC (
+        .clk(clk),
+        .reset(reset),
+        .pc_in(pc_next),
+        .pc_out(pc_reg)
+    );
 
     // =========================
     // 2) FETCH INSTRUCTION
@@ -64,7 +64,20 @@ module mips_processor(
     wire [31:0] read_data1, read_data2;
 
     // Mux for write register selection: rt vs rd
-    assign write_reg_sel = (reg_dst) ? rd : rt;
+    wire [31:0] reg_dst_mux_out;  // Temporary wire to hold full 32-bit mux output
+
+    mux_2to1 reg_dst_mux (
+    .in0({27'b0, rt}),   // Zero-extend rt to 32 bits
+    .in1({27'b0, rd}),   // Zero-extend rd to 32 bits
+    .sel(reg_dst),
+    .out(reg_dst_mux_out)  // Mux outputs full 32 bits
+    );
+
+    // Extract lower 5 bits from the mux output for register selection
+    assign write_reg_sel = reg_dst_mux_out[4:0];
+
+
+
 
     // Instantiate the register file
     register_file REG_FILE (
@@ -82,23 +95,33 @@ module mips_processor(
     // 5) SIGN EXTENSION
     // =========================
     wire [31:0] sign_ext_imm;
-    assign sign_ext_imm = {{16{imm[15]}}, imm};
+    sign_extend SE (
+        .in(imm),
+        .out(sign_ext_imm)
+    );
 
     // =========================
     // 6) ALU CONTROL
     // =========================
     wire [3:0] alu_control;
     alu_control ALU_CTRL (
-        .alu_op(alu_op),
-        .funct(funct),
-        .alu_control(alu_control)
+    .alu_op(alu_op),
+    .funct(funct),
+    .opcode(opcode),
+    .alu_control(alu_control)
     );
+
 
     // =========================
     // 7) ALU INPUT MUX
     // =========================
     wire [31:0] alu_input_b;
-    assign alu_input_b = (alu_src) ? sign_ext_imm : read_data2;
+    mux_2to1 alu_input_mux (
+        .in0(read_data2),
+        .in1(sign_ext_imm),
+        .sel(alu_src),
+        .out(alu_input_b)
+    );
 
     // =========================
     // 8) ALU
@@ -129,7 +152,12 @@ module mips_processor(
     // =========================
     // 10) WRITE-BACK MUX
     // =========================
-    assign write_data_rf = (mem_to_reg) ? mem_read_data : alu_result;
+    mux_2to1 write_back_mux (
+        .in0(alu_result),
+        .in1(mem_read_data),
+        .sel(mem_to_reg),
+        .out(write_data_rf)
+    );
 
     // =========================
     // 11) BRANCH CONTROL
@@ -171,17 +199,28 @@ module mips_processor(
     );
 
     // Mux for branch or sequential
-    assign pc_branch_or_seq = (pc_src) ? branch_sum : pc_plus_4;
+    mux_2to1 pc_branch_mux (
+        .in0(pc_plus_4),
+        .in1(branch_sum),
+        .sel(pc_src),
+        .out(pc_branch_or_seq)
+    );
 
     // Jump target: {PC+4[31:28], jump_address << 2}
     assign pc_jump = { pc_plus_4[31:28], jump_address, 2'b00 };
 
-    // Next PC selection
+    /* // Next PC selection
     always @(*) begin
         if (jump)
             pc_next = pc_jump;
         else
             pc_next = pc_branch_or_seq;
-    end
+    end */
+    mux_2to1 pc_next_mux (
+        .in0(pc_branch_or_seq),
+        .in1(pc_jump),
+        .sel(jump),
+        .out(pc_next)
+    );
 
 endmodule

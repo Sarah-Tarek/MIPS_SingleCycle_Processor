@@ -31,7 +31,6 @@ always @(*) begin
                 6'b001101: alu_control = 4'b0001; // ori  => OR
                 6'b001010: alu_control = 4'b0111; // slti => SLT
                 6'b001111: alu_control = 4'bXXXX; // lui => Typically shift imm by 16
-                // ...
                 default:   alu_control = 4'b0000; // fallback
             endcase
         end
